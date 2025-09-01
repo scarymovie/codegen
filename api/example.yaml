@@ -1,0 +1,33 @@
+openapi: 3.0.0
+info:
+  title: API
+  version: 1.0.0
+
+paths:
+  /hello:
+    post:
+      operationId: hello
+      responses:
+        default:
+          description: unexpected error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/NwkError"
+
+components:
+  schemas:
+    NwkError:
+      type: object
+      description: Непредвиденная ошибка
+      required:
+        - code
+        - message
+      properties:
+        code:
+          type: integer
+          format: int32
+          description: Код ошибки
+        message:
+          type: string
+          description: Сообщение об ошибке
