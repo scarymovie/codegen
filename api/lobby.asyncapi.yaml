@@ -1,0 +1,53 @@
+asyncapi: '2.6.0'
+info:
+  title: Lobby WebSocket API
+  version: 1.0.0
+  description: |
+    API для лобби. Пользователи могут подключаться,
+    и другим участникам рассылается сообщение о новом пользователе.
+  contact:
+    name: API Support
+    email: support@example.com
+  license:
+    name: MIT
+    url: https://opensource.org/licenses/MIT
+
+defaultContentType: application/json
+tags:
+  - name: lobby
+    description: Управление лобби
+
+servers:
+  production:
+    url: ws://localhost:8080/ws
+    protocol: ws
+    description: WebSocket сервер для лобби
+
+channels:
+  lobby/joined:
+    description: Канал для уведомлений о новых участниках
+    subscribe:
+      summary: Подписка на события "пользователь присоединился"
+      operationId: onUserJoined
+      message:
+        $ref: '#/components/messages/UserJoined'
+
+components:
+  messages:
+    UserJoined:
+      messageId: userJoinedEvent
+      name: userJoined
+      title: Пользователь присоединился
+      payload:
+        type: object
+        properties:
+          userId:
+            type: string
+            description: Уникальный ID пользователя
+          username:
+            type: string
+            description: Имя пользователя
+          joinedAt:
+            type: string
+            format: date-time
+            description: Когда пользователь присоединился

@@ -1,0 +1,30 @@
+openapi: 3.0.3
+info:
+  title: Lobby API
+  version: "1.0"
+paths:
+  /lobby/join:
+    post:
+      summary: Join the lobby
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: ["user", "room"]
+              properties:
+                user:
+                  type: string
+                room:
+                  type: string
+      responses:
+        '200':
+          description: Joined successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
