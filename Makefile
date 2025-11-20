@@ -1,15 +1,20 @@
-GEN_IMAGE := example-codegen
+GEN_IMAGE_OAPI := example-codegen-oapi
+GEN_IMAGE_ASYNCAPI := example-codegen-asyncapi
 GEN_TAG := latest
 API_DIR := api
 CONFIG_DIR := oapi-config
 OUT_DIR := external
 
-build_codegen:
-	@echo ">>> Building codegen image..."
-	docker build -t $(GEN_IMAGE):$(GEN_TAG) -f codegen/Dockerfile .
+build-openapi:
+	@echo ">>> Building OpenAPI codegen image..."
+	docker build -t $(GEN_IMAGE_OAPI):$(GEN_TAG) -f codegen/Dockerfile.openapi .
+
+build-asyncapi:
+	@echo ">>> Building AsyncAPI codegen image..."
+	docker build -t $(GEN_IMAGE_ASYNCAPI):$(GEN_TAG) -f codegen/Dockerfile.asyncapi .
 
 # --- OpenAPI: Server ---
-generate-server: build_codegen
+generate-server: build-openapi
 	@set -e; \
 	SPECS="$(wildcard $(API_DIR)/*.openapi.yml $(API_DIR)/*.openapi.yaml)"; \
 	if [ -z "$$SPECS" ]; then \
@@ -24,12 +29,12 @@ generate-server: build_codegen
 		docker run --rm \
 			-v $(PWD):/app \
 			-w /app \
-			$(GEN_IMAGE):$(GEN_TAG) \
+			$(GEN_IMAGE_OAPI):$(GEN_TAG) \
 			"oapi-codegen -config $(CONFIG_DIR)/server.yaml -package $$name -o $$out_dir/$$name.gen.go $$spec"; \
 	done
 
 # --- OpenAPI: Client ---
-generate-client: build_codegen
+generate-client: build-openapi
 	@set -e; \
 	SPECS="$(wildcard $(API_DIR)/*.openapi.yml $(API_DIR)/*.openapi.yaml)"; \
 	if [ -z "$$SPECS" ]; then \
@@ -44,12 +49,12 @@ generate-client: build_codegen
 		docker run --rm \
 			-v $(PWD):/app \
 			-w /app \
-			$(GEN_IMAGE):$(GEN_TAG) \
+			$(GEN_IMAGE_OAPI):$(GEN_TAG) \
 			"oapi-codegen -config $(CONFIG_DIR)/client.yaml -package $$name -o $$out_dir/$$name.gen.go $$spec"; \
 	done
 
 # --- AsyncAPI ---
-generate-asyncapi: build_codegen
+generate-asyncapi: build-asyncapi
 	@set -e; \
 	SPECS="$(wildcard $(API_DIR)/*.asyncapi.yml $(API_DIR)/*.asyncapi.yaml)"; \
 	if [ -z "$$SPECS" ]; then \
@@ -64,7 +69,7 @@ generate-asyncapi: build_codegen
 		docker run --rm \
 			-v $(PWD):/app \
 			-w /app \
-			$(GEN_IMAGE):$(GEN_TAG) \
+			$(GEN_IMAGE_ASYNCAPI):$(GEN_TAG) \
 			"asyncapi generate fromTemplate $$spec @asyncapi/go-watermill-template -o $$out_dir --force-write"; \
 	done
 
