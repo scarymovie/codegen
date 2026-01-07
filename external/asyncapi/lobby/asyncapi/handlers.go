@@ -1,9 +1,0 @@
-
-package asyncapi
-
-import (
-	"log"
-  
-)
-
-

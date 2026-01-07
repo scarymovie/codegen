@@ -9,10 +9,6 @@ build-openapi:
 	@echo ">>> Building OpenAPI codegen image..."
 	docker build -t $(GEN_IMAGE_OAPI):$(GEN_TAG) -f codegen/Dockerfile.openapi .
 
-build-asyncapi:
-	@echo ">>> Building AsyncAPI codegen image..."
-	docker build -t $(GEN_IMAGE_ASYNCAPI):$(GEN_TAG) -f codegen/Dockerfile.asyncapi .
-
 # --- OpenAPI: Server ---
 generate-server: build-openapi
 	@set -e; \
@@ -53,29 +49,8 @@ generate-client: build-openapi
 			"oapi-codegen -config $(CONFIG_DIR)/client.yaml -package $$name -o $$out_dir/$$name.gen.go $$spec"; \
 	done
 
-# --- AsyncAPI ---
-generate-asyncapi: build-asyncapi
-	@set -e; \
-	SPECS="$(wildcard $(API_DIR)/*.asyncapi.yml $(API_DIR)/*.asyncapi.yaml)"; \
-	if [ -z "$$SPECS" ]; then \
-		echo "No AsyncAPI specs matched (*.asyncapi.yml|*.asyncapi.yaml) in $(API_DIR)"; \
-		exit 0; \
-	fi; \
-	for spec in $$SPECS; do \
-		name=$$(basename $$spec | sed -E 's/\.asyncapi\.ya?ml$$//'); \
-		out_dir=$(OUT_DIR)/asyncapi/$$name; \
-		echo ">>> Generating asyncapi code for $$name into $$out_dir..."; \
-		mkdir -p $$out_dir; \
-		docker run --rm \
-			-v $(PWD):/app \
-			-w /app \
-			$(GEN_IMAGE_ASYNCAPI):$(GEN_TAG) \
-			"asyncapi generate fromTemplate $$spec @asyncapi/go-watermill-template -o $$out_dir --force-write"; \
-	done
-
-
 # --- Orchestration ---
-generate: generate-server generate-client generate-asyncapi
+generate: generate-server generate-client
 
 clean:
 	@echo ">>> Cleaning external..."
